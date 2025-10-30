@@ -1,0 +1,41 @@
+name: Deploy Backend to Server
+
+on:
+  push:
+    branches:
+      - main  
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/setup-prodenv-backend:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/setup-prodenv-backend:latest
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/setup-prodenv-backend:latest
+            docker stop setup-prodenv || true
+            docker rm setup-prodenv || true
+            docker run -d -p 3078:3000 \
+              --env-file /.env.production \
+              --restart always \
+              --name setup-prodenv \
+              ${{ secrets.DOCKER_USERNAME }}/setup-prodenv-backend:latest

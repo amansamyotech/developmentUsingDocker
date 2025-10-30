@@ -18,12 +18,12 @@ const pool = new Pool({
 });
 
 // health route
-app.get("/health", (req, res) => {
+app.get("/v1/health", (req, res) => {
   res.json({ status: "ok", env: process.env.NODE_ENV });
 });
 
 // test DB route
-app.get("/db", async (req, res) => {
+app.get("/v1/db", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
     res.json({ success: true, time: result.rows[0].now });
