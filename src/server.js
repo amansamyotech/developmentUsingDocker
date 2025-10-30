@@ -22,6 +22,10 @@ app.get("/v1/health", (req, res) => {
   res.json({ status: "ok", env: process.env.NODE_ENV });
 });
 
+app.get("/v1/test", (req, res) => {
+  res.json({ status: "ok", message: "server is running fine" });
+});
+
 // test DB route
 app.get("/v1/db", async (req, res) => {
   try {
